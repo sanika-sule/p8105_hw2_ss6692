@@ -61,36 +61,58 @@ trashwheel_tidy =
   select(trashwheel_name, everything())
 ```
 
-### Calculating total cigarette butts collected by Gwynnda Trash Wheel
-
-```{r gwynnda_cigs}
-gwynnda_cigs =
+```{r gwynnda_cigs, echo=FALSE}
+  gwynnda_cigs =  
   filter(gwynnda, month == "7", year == 2021) |> 
   summarise(total_cigarette_butts = sum(cigarette_butts))
 ```
 
-### Trash Wheel Data Summary
+Using `bind_rows`, I merged the datasets `mr_trashwheel`, `prof_trashwheel` and `gwynnda` into a cleaned dataset titled `trashwheel_tidy`. In `trashwheel_tidy`, there are `r nrow(trashwheel_tidy)` observations and `r ncol(trashwheel_tidy)` columns. The dataset explores how much trash was collected by the trash wheels using the variable `weight_tons,` the types of trash collected, and the number of `homes_powered` using the collected trash.Using this dataset, we know that Gwynnda Trash Wheel collected `r gwynnda_cigs$total_cigarette_butts` cigarette butts. Additionally, we know that Professor Trash Wheel collected `r sum(prof_trashwheel$weight_tons)` tons of trash.
+ 
 
 
 ## Problem 3
-
 ### Importing and cleaning baseline data
-```{r}
+```{r baseline_data}
 baseline_data = read_csv(file = "data/MCI_baseline.csv") |>
   janitor::row_to_names(row_number = 1) |>
   janitor::clean_names() |>
   mutate(sex = ifelse(sex == "0", "male", "female")) |>
   mutate(apoe4 = ifelse(apoe4 == "0", "non_carrier", "carrier")) |>
   filter(age_at_onset != ".")
+  baseline_data$current_age = as.numeric(baseline_data$current_age)
 ```
 
-### Importing and cleaning baseline data
-```{r}
+```{r prop_female, echo=FALSE}
+prop_female =
+  filter(baseline_data, sex == "female", apoe4 == "carrier") |> 
+  nrow() / sum(baseline_data$sex == "female")*100
+```
+
+I imported the baseline data using `read_csv`. I used `janitor::row_to_names` to prompt the dataset to ignore the variable descriptions and use row 2 as the column names. Then, I changed `sex` and `apoe4` so they are no longer numeric and more descriptive of the variable. Finally, I used the `filter`function to remove participants who had no MCI at baseline. Of the `r nrow(read_csv("data/MCI_baseline.csv"))-1` participants, `r nrow(baseline_data)` develped MCI and remained in the cleaned dataset. The average baseline age is `r mean(baseline_data$current_age)` years. In this dataset, `r prop_female`% of the females are APOE4 carriers.
+
+### Importing and cleaning amyloid data
+```{r amyloid_data}
 amyloid_data = read_csv(file = "data/mci_amyloid.csv") |>
   janitor::row_to_names(row_number = 1) |>
-  janitor::clean_names()
+  janitor::clean_names() |>
+  rename(id = study_id)
 ```
 
+The amyloid data was imported and cleaned similarly to the baseline data. There are `r nrow(amyloid_data)` observations and `r ncol(amyloid_data)` variables. Therefore, there are 4 more participants in the amyloid dataset than in the baseline dataset. I renamed `study_id` as `id` so we can merge the two datasets in the next step.  
 
+### Merging datasets by participants
 
+```{r mci_data}
+mci_data = 
+  inner_join(baseline_data, amyloid_data, by = "id")
+```
+
+I merged the data by `id` number so only the participants who appear in both datasets are present. In this dataset, there are `r nrow(mci_data)` participants.
+
+### Exporting `mci_data` as a .csv
+
+```{r}
+write.csv(mci_data, file = "data/mci_data.csv")
+```
 
