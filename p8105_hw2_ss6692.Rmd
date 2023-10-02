@@ -6,11 +6,12 @@ date: "2023-09-28"
 
 ## Problem 2
 
-```{r load_libraries}
+```{r libraries, message=FALSE}
 library(tidyverse)
 library(readxl)
 library(dplyr)
 library(janitor)
+library(tidyr)
 ```
 
 ### Loading and cleaning the Mr. Trash Wheel dataset
@@ -19,9 +20,11 @@ library(janitor)
 mr_trashweel = 
   readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:N550", sheet = "Mr. Trash Wheel")|>
   janitor::clean_names() |>
-  mutate(trashwheel = "mr_trashwheel")|>
+  mutate(trashwheel_name = "mr_trashwheel")|>
   mutate(homes_powered = (weight_tons * 500)/30)|>
-  select(-month, -year)
+  select(-month, -year) |>
+  separate(date, into = c("year", "month", "day"), convert = TRUE) |>
+  drop_na()
 ```
 
 ### Loading and cleaning the Professor Trash Wheel dataset
@@ -30,9 +33,11 @@ mr_trashweel =
 prof_trashwheel = 
   readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:M97", sheet = "Professor Trash Wheel")|>
   janitor::clean_names() |>
-  mutate(trashwheel = "professor") |>
+  mutate(trashwheel_name = "professor") |>
   mutate(homes_powered = (weight_tons * 500)/30)|>
-  select(-month, -year)
+  select(-month, -year) |>
+  separate(date, into = c("year", "month", "day"), convert = TRUE) |>
+  drop_na()
 ```
 
 ### Loading and cleaning the Gwynnda Trash Wheel dataset
@@ -41,11 +46,51 @@ prof_trashwheel =
 gwynnda = 
   readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:K110", sheet = "Gwynnda Trash Wheel")|>
   janitor::clean_names() |>
-  mutate(trashwheel = "gwynnda")|>
+  mutate(trashwheel_name = "gwynnda")|>
   mutate(homes_powered = (weight_tons * 500)/30)|>
-  select(-month, -year)
+  select(-month, -year) |>
+  separate(date, into = c("year", "month", "day"), convert = TRUE) |>
+  drop_na()
 ```
 
 ### Merging the three datasets
+
+```{r trashwheel_merged}
+trashwheel_tidy = 
+  bind_rows(prof_trashwheel, gwynnda, mr_trashweel) |>
+  select(trashwheel_name, everything())
+```
+
+### Calculating total cigarette butts collected by Gwynnda Trash Wheel
+
+```{r gwynnda_cigs}
+gwynnda_cigs =
+  filter(gwynnda, month == "7", year == 2021) |> 
+  summarise(total_cigarette_butts = sum(cigarette_butts))
+```
+
+### Trash Wheel Data Summary
+
+
+## Problem 3
+
+### Importing and cleaning baseline data
+```{r}
+baseline_data = read_csv(file = "data/MCI_baseline.csv") |>
+  janitor::row_to_names(row_number = 1) |>
+  janitor::clean_names() |>
+  mutate(sex = ifelse(sex == "0", "male", "female")) |>
+  mutate(apoe4 = ifelse(apoe4 == "0", "non_carrier", "carrier")) |>
+  filter(age_at_onset != ".")
+```
+
+### Importing and cleaning baseline data
+```{r}
+amyloid_data = read_csv(file = "data/mci_amyloid.csv") |>
+  janitor::row_to_names(row_number = 1) |>
+  janitor::clean_names()
+```
+
+
 
 
