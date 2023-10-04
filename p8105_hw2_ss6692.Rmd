@@ -18,7 +18,7 @@ library(tidyr)
 
 ```{r clean_mr_trashwheel}
 mr_trashweel = 
-  readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:N550", sheet = "Mr. Trash Wheel")|>
+  readxl::read_excel("data/202309 Trash Wheel Collection Data (1).xlsx", range = "A2:N550", sheet = "Mr. Trash Wheel")|>
   janitor::clean_names() |>
   mutate(trashwheel_name = "mr_trashwheel")|>
   mutate(homes_powered = (weight_tons * 500)/30)|>
@@ -31,7 +31,7 @@ mr_trashweel =
 
 ```{r clean_prof_trashwheel}
 prof_trashwheel = 
-  readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:M97", sheet = "Professor Trash Wheel")|>
+  readxl::read_excel("data/202309 Trash Wheel Collection Data (1).xlsx", range = "A2:M97", sheet = "Professor Trash Wheel")|>
   janitor::clean_names() |>
   mutate(trashwheel_name = "professor") |>
   mutate(homes_powered = (weight_tons * 500)/30)|>
@@ -44,7 +44,7 @@ prof_trashwheel =
 
 ```{r clean_gwynnda}
 gwynnda = 
-  readxl::read_excel("data/202207 Trash Wheel Collection Data.xlsx", range = "A2:K110", sheet = "Gwynnda Trash Wheel")|>
+  readxl::read_excel("data/202309 Trash Wheel Collection Data (1).xlsx", range = "A2:K110", sheet = "Gwynnda Trash Wheel")|>
   janitor::clean_names() |>
   mutate(trashwheel_name = "gwynnda")|>
   mutate(homes_powered = (weight_tons * 500)/30)|>
